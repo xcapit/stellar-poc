@@ -1,5 +1,7 @@
 # Soroban Project
 
+This project showcases initial experiments with Soroban.
+
 ## Project Structure
 
 This repository uses the recommended structure for a Soroban project:
