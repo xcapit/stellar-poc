@@ -1,6 +1,8 @@
 # Soroban Project
 
-This project showcases initial experiments with Soroban.
+This project showcases initial experiments with Soroban. As a result of them we are working on
+- [Shelter](https://github.com/xcapit/shelter)
+- Low Tech Wallet Service (coming soon)
 
 ## Project Structure
 
