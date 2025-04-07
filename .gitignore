@@ -4,3 +4,12 @@ target
 # Local settings
 .soroban
 .stellar
+
+# node
+node_modules
+dist
+lib
+
+# others
+.idea
+.DS_Store
