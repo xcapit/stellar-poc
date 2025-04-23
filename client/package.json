@@ -17,7 +17,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@stellar/stellar-sdk": "^13.1.0",
+    "@stellar/stellar-sdk": "^13.3.0",
     "@stellar/typescript-wallet-sdk": "^1.9.0"
   }
 }

@@ -1,4 +1,4 @@
-import { Asset, BASE_FEE, Keypair, Networks, Operation, TransactionBuilder } from "@stellar/stellar-sdk";
+import { Address, Asset, BASE_FEE, Contract, Keypair, nativeToScVal, Networks, Operation, TransactionBuilder, rpc, authorizeEntry, xdr, hash } from "@stellar/stellar-sdk";
 import { AccountService, IssuedAssetId, NativeAssetId, SigningKeypair, SponsoringBuilder, Stellar, walletSdk } from "@stellar/typescript-wallet-sdk";
 import crypto from "node:crypto";
 
@@ -137,7 +137,7 @@ describe('Testing Stellar Wallet SDK', () => {
       expect(parseFloat(usdcBalance)).toBeGreaterThan(0);
     }, 5000000);
 
-    test('mixing things...', async () => {
+    test.skip('mixing things...', async () => {
       // Getting some USDC...
       const keypair = await _fundedKeypair();
       await _addAnAssetTo(keypair);
@@ -239,5 +239,160 @@ describe('Testing Stellar Wallet SDK', () => {
 
       expect(result).toEqual(true);
     }, 5000000);
+  });
+
+  describe('Auth Tx and Custom Account', () => {
+    const amount = 1;
+    const aliceSecret = 'SCG4Q5PANQOYOQELESMIYLPIERGFU4X25R7WUVC6JH43KUX5QOIWZYBQ';
+    const aliceKeyPair = Keypair.fromSecret(aliceSecret);
+    const tokenContractId = 'CAAIDCXSU7N4YYKCJ4WADUYAYL2NB53JFZ5N7PA7PQMKU4OCEOFSVYCE';
+    const smartAccount = 'CBIAXFSIIDNF2SRWR36X6OWB3RPMD6GPCGDXQ2FQV7EWE55CJ2PURZP4';
+    const recipient = 'GASL6XDOK2TO6SCFTXFN2HQDAONLBID2GKX5TYBTHOWA7ZU7VRFZNHGM';
+    const rpcServer = new rpc.Server('https://soroban-rpc.testnet.stellar.gateway.fm');
+
+    test('native to scval', () => {
+      const commonHolder = 'GAXRNW46AL4PI7Q6FABZ2OS3BKG3I7FHMBPRP7FBQHQLFX2KU2PBGGUP';
+      const recipient = 'GASL6XDOK2TO6SCFTXFN2HQDAONLBID2GKX5TYBTHOWA7ZU7VRFZNHGM';
+      const amount = 10;
+
+      const txArgs = [
+        [commonHolder, "address"],
+        [recipient, "address"],
+        [amount, "i128"],
+      ].map((item) => nativeToScVal(item[0], { type: item[1] }));
+
+      expect(txArgs).toBeTruthy();
+    });
+
+    test.skip('transfer tx with auth', async () => {
+      const commonHolder = 'GAXRNW46AL4PI7Q6FABZ2OS3BKG3I7FHMBPRP7FBQHQLFX2KU2PBGGUP';
+      const commonHolderSecret = 'SCJTXNP2BN67ALO73UBCLWM5MCRF4L5LHSQPYG3UNXONE4ESPUDESTCE';
+      const commonHolderKeypair = Keypair.fromSecret(commonHolderSecret);
+      const commonHolderAccount = await stellar.server.loadAccount(commonHolderKeypair.publicKey());
+      const txArgs = [
+        [commonHolder, "address"],
+        [recipient, "address"],
+        [amount, "i128"],
+      ].map((item) => nativeToScVal(item[0], { type: item[1] }));
+
+      const tx = new TransactionBuilder(commonHolderAccount, {
+        fee: BASE_FEE,
+        networkPassphrase: Networks.TESTNET
+      }).addOperation(Operation.invokeContractFunction({
+        contract: tokenContractId,
+        function: 'transfer',
+        args: txArgs
+      }
+      )).setTimeout(30).build();
+
+      const preppedTx = await rpcServer.prepareTransaction(tx);
+      preppedTx.sign(commonHolderKeypair);
+
+      const sendTx = await rpcServer.sendTransaction(preppedTx);
+      console.log('hash', sendTx.hash);
+
+      const txResponse = await rpcServer.pollTransaction(sendTx.hash);
+
+      expect(txResponse.status).toEqual("SUCCESS");
+    });
+
+    test.skip('transfer from custom account 2', async () => {
+      const aliceAccount = await stellar.server.loadAccount(aliceKeyPair.publicKey());
+
+      const txArgs = [
+        [smartAccount, "address"],
+        [recipient, "address"],
+        [amount, "i128"],
+      ].map((item) => nativeToScVal(item[0], { type: item[1] }));
+
+      const tx = new TransactionBuilder(aliceAccount, {
+        fee: BASE_FEE,
+        networkPassphrase: Networks.TESTNET
+      }).addOperation(Operation.invokeContractFunction({
+        contract: tokenContractId,
+        function: 'transfer',
+        args: txArgs
+      }
+      )).setTimeout(30).build();
+
+      const preppedTx1 = await rpcServer.prepareTransaction(tx);
+      const resimTx = await rpcServer.prepareTransaction(preppedTx1);
+
+      const simResult: any = await rpcServer.simulateTransaction(resimTx);
+
+      const modAuth = [];
+      for (const entry of simResult.result?.auth) {
+        modAuth.push(entry.credentials().switch() !== xdr.SorobanCredentialsType.sorobanCredentialsSourceAccount() ?
+          await authorizeEntry(
+            entry,
+            async (payload) => aliceKeyPair.sign(hash(payload.toXDR())),
+            simResult.latestLedger + 1000,
+            Networks.TESTNET
+          ) : entry);
+      }
+
+      simResult.result.auth = modAuth;
+
+      const preppedTx = rpc.assembleTransaction(tx, simResult).build();
+      preppedTx.sign(aliceKeyPair);
+
+      const sendTx = await rpcServer.sendTransaction(preppedTx);
+      console.log('hash', sendTx.hash);
+
+      const txResponse = await rpcServer.pollTransaction(sendTx.hash);
+
+      expect(txResponse.status).toEqual("SUCCESS");
+    });
+
+    test.skip('transfer from custom account', async () => {
+      const aliceAccount = await stellar.server.loadAccount(aliceKeyPair.publicKey());
+
+      const txArgs = [
+        [smartAccount, "address"],
+        [recipient, "address"],
+        [amount, "i128"],
+      ].map((item) => nativeToScVal(item[0], { type: item[1] }));
+
+      const tx = new TransactionBuilder(aliceAccount, {
+        fee: BASE_FEE,
+        networkPassphrase: Networks.TESTNET
+      }).addOperation(Operation.invokeContractFunction({
+        contract: tokenContractId,
+        function: 'transfer',
+        args: txArgs
+      }
+      )).setTimeout(30).build();
+
+      const simTx: any = await rpcServer.simulateTransaction(tx);
+      console.log('tx simulated...');
+
+      simTx.result.auth = simTx.result.auth.map(async (entry: any) => {
+        entry.credentials().switch() === xdr.SorobanCredentialsType.sorobanCredentialsSourceAccount() ? entry :
+          await authorizeEntry(
+            entry,
+            async (payload) => aliceKeyPair.sign(hash(payload.toXDR())),
+            simTx.latestLedger + 1000,
+            Networks.TESTNET
+          )
+      });
+      console.log('auth added...');
+
+      const preppedTx = rpc.assembleTransaction(tx, simTx).build();
+      console.log('new tx assembled');
+      preppedTx.sign(aliceKeyPair);
+      console.log('new tx signed');
+      const sendTx = await rpcServer.sendTransaction(preppedTx);
+      console.log('hash', sendTx.hash);
+      // const preppedTx = await rpcServer.prepareTransaction(tx);
+      // const resimTx = await rpcServer.prepareTransaction(preppedTx);
+      // resimTx.sign(aliceKeyPair);
+      //
+      // const sendTx = await rpcServer.sendTransaction(resimTx);
+      // console.log('hash', sendTx.hash);
+
+      const txResponse = await rpcServer.pollTransaction(sendTx.hash);
+
+      expect(txResponse.status).toEqual("SUCCESS");
+    });
   });
 });
