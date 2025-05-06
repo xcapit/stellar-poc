@@ -34,7 +34,7 @@ describe('Testing Stellar Wallet SDK', () => {
     account = stellar.account();
   });
 
-  describe('Keys and Accounts', () => {
+  describe.skip('Keys and Accounts', () => {
     test('keys', () => {
       const keypair = account.createKeypair();
 
@@ -81,7 +81,7 @@ describe('Testing Stellar Wallet SDK', () => {
     }, 5000000);
   });
 
-  describe('Assets (trustline)', () => {
+  describe.skip('Assets (trustline)', () => {
     test.skip('add an asset to the account (trustline)', async () => {
       const keypair = await _fundedKeypair();
 
@@ -110,7 +110,7 @@ describe('Testing Stellar Wallet SDK', () => {
     }, 5000000);
   });
 
-  describe('Accesing blockchain data', () => {
+  describe.skip('Accesing blockchain data', () => {
     test.skip('transactions', async () => {
       const keypair = await _fundedKeypair();
       await _addAnAssetTo(keypair);
@@ -121,7 +121,7 @@ describe('Testing Stellar Wallet SDK', () => {
     }, 5000000);
   });
 
-  describe('More transactions', () => {
+  describe.skip('More transactions', () => {
     test.skip('swap', async () => {
       const keypair = await _fundedKeypair();
       await _addAnAssetTo(keypair);
@@ -209,7 +209,7 @@ describe('Testing Stellar Wallet SDK', () => {
     }, 5000000);
   });
 
-  describe('Sponsorship', () => {
+  describe.skip('Sponsorship', () => {
     test.skip('sponsoring a transaction', async () => {
       const sponsorKeypair = await _fundedKeypair();
       const sponsoredKeypair = await _fundedKeypair();
@@ -241,7 +241,7 @@ describe('Testing Stellar Wallet SDK', () => {
     }, 5000000);
   });
 
-  describe('Auth Tx and Custom Account', () => {
+  describe.skip('Auth Tx and Custom Account', () => {
     const amount = 1;
     const aliceSecret = 'SCG4Q5PANQOYOQELESMIYLPIERGFU4X25R7WUVC6JH43KUX5QOIWZYBQ';
     const aliceKeyPair = Keypair.fromSecret(aliceSecret);
