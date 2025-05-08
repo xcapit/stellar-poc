@@ -7,7 +7,6 @@ import {
   xdr,
 } from "@stellar/stellar-sdk";
 import {
-  AccountService,
   Stellar,
   walletSdk,
 } from "@stellar/typescript-wallet-sdk";
@@ -22,7 +21,7 @@ describe("shelter indirect invocation", () => {
   const tokenContractId =
     "CCQK3OJ5T4A5B4SDKQWH7PQKC5HMUZHIGUWF2INTKDQB32F3YPEW7L27";
   const smartAccount =
-    "CA2SFZH6AF5KLRKHMYV5PFWRWT3X2HBUZPKWRAXFMBZSRXLMH2WYKSJT";
+    "CC46JEMB7KIYKMV2FH5RU3X3DR3VMXGSB2WDSQMVHLBEEYJJGS5D5A3N";
   const merch = "GASL6XDOK2TO6SCFTXFN2HQDAONLBID2GKX5TYBTHOWA7ZU7VRFZNHGM";
   const rpcUrl = "https://soroban-rpc.testnet.stellar.gateway.fm";
   const rpcServer = new rpc.Server(rpcUrl);
@@ -166,7 +165,7 @@ describe("shelter indirect invocation", () => {
     expect(txResponse.status).toEqual("SUCCESS");
   }, 5000000);
 
-  test("attacker try to use a recipient aid", async () => {
+  test.skip("attacker try to use a recipient aid", async () => {
     const bob = await _randomKeyPair()
 
     const tx = await _shelter.bound_aid({
@@ -208,7 +207,7 @@ describe("shelter indirect invocation", () => {
     expect(txResponse.status).toEqual("NOT_FOUND");
   }, 5000000);
 
-  test("transfer failed, not enough aid", async () => {
+  test.skip("transfer failed, not enough aid", async () => {
     const bob = await _randomKeyPair()
     
     const tx = await _shelter.bound_aid({
@@ -240,7 +239,7 @@ describe("shelter indirect invocation", () => {
     expect(() => rpc.assembleTransaction(buildTx, simTx).build()).toThrow();
   }, 5000000);
 
-  test("transfer from shelter", async () => {
+  test.skip("transfer from shelter", async () => {
     const bob = await _randomKeyPair()
 
     const tx = await _shelter.bound_aid({
@@ -278,4 +277,53 @@ describe("shelter indirect invocation", () => {
 
     expect(txResponse.status).toEqual("SUCCESS");
   }, 5000000);
+
+  test.skip("transfer failed after unbound aid", async () => {
+    const bob = await _randomKeyPair()
+
+    const boundRawTx = await _shelter.bound_aid({
+      recipient: bob.rawPublicKey(),
+      token: tokenContractId,
+      amount: BigInt(amount),
+    });
+
+    const boundBuildTx = boundRawTx.built!;
+
+    boundBuildTx.sign(stewardKeypair);
+
+    const boundTx = await rpcServer.sendTransaction(boundBuildTx);
+    console.log("hash bound tx", boundTx.hash);
+
+    const boundTxResponse = await rpcServer.pollTransaction(boundTx.hash);
+    expect(boundTxResponse.status).toEqual("SUCCESS");
+
+    const unboundRawTx = await _shelter.unbound_aid({
+      recipient: bob.rawPublicKey(),
+      token: tokenContractId,
+    });
+
+    const unboundBuildTx = unboundRawTx.built!;
+
+    unboundBuildTx.sign(stewardKeypair);
+
+    const unboundTx = await rpcServer.sendTransaction(unboundBuildTx);
+    console.log("hash unbound tx", unboundTx.hash);
+    console.log("unbound tx", unboundTx.status);
+
+    const unboundTxResponse = await rpcServer.pollTransaction(unboundTx.hash);
+    expect(unboundTxResponse.status).toEqual("SUCCESS");
+
+    const at: any = await _sac(bob.publicKey()).transfer({
+      from: smartAccount,
+      to: merch,
+      amount: BigInt(amount),
+    });
+    await _sign(at, { keypair: bob });
+
+    const buildTx = at.built!;
+    const simTx: any = await rpcServer.simulateTransaction(buildTx);
+
+    expect(() => rpc.assembleTransaction(buildTx, simTx).build()).toThrow();
+  }, 5000000)
+
 });

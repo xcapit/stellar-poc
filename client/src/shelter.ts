@@ -1,5 +1,5 @@
 import { Buffer } from "buffer";
-import { contract, rpc } from "@stellar/stellar-sdk";
+import { contract } from "@stellar/stellar-sdk";
 
 if (typeof window !== "undefined") {
   //@ts-ignore Buffer exists
@@ -28,8 +28,11 @@ export type DataKey =
 
 export const Errors = {
   1: { message: "NotEnoughBalance" },
+
   2: { message: "InvalidAction" },
+
   3: { message: "NotEnoughAid" },
+
   4: { message: "InvalidContext" },
 };
 
@@ -86,6 +89,29 @@ export interface Shelter {
       token,
       amount,
     }: { recipient: Buffer; token: string; amount: contract.i128 },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    }
+  ) => Promise<contract.AssembledTransaction<null>>;
+
+  /**
+   * Construct and simulate a unbound_aid transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   */
+  unbound_aid: (
+    { recipient, token }: { recipient: Buffer; token: string },
     options?: {
       /**
        * The fee to pay for the transaction. Default: BASE_FEE
@@ -198,6 +224,7 @@ export class Shelter extends contract.Client {
         "AAAAAAAAAAAAAAAHc3Rld2FyZAAAAAAAAAAAAQAAABM=",
         "AAAAAAAAAAAAAAAOdXBkYXRlX3N0ZXdhcmQAAAAAAAEAAAAAAAAAC25ld19zdGV3YXJkAAAAABMAAAAA",
         "AAAAAAAAAAAAAAAJYm91bmRfYWlkAAAAAAAAAwAAAAAAAAAJcmVjaXBpZW50AAAAAAAD7gAAACAAAAAAAAAABXRva2VuAAAAAAAAEwAAAAAAAAAGYW1vdW50AAAAAAALAAAAAA==",
+        "AAAAAAAAAAAAAAALdW5ib3VuZF9haWQAAAAAAgAAAAAAAAAJcmVjaXBpZW50AAAAAAAD7gAAACAAAAAAAAAABXRva2VuAAAAAAAAEwAAAAA=",
         "AAAAAAAAAAAAAAAGYWlkX29mAAAAAAACAAAAAAAAAAlyZWNpcGllbnQAAAAAAAPuAAAAIAAAAAAAAAAFdG9rZW4AAAAAAAATAAAAAQAAAAs=",
         "AAAAAAAAAAAAAAAPYXNzaWduZWRfYWlkX29mAAAAAAEAAAAAAAAABXRva2VuAAAAAAAAEwAAAAEAAAAL",
         "AAAAAAAAAAAAAAAQYXZhaWxhYmxlX2FpZF9vZgAAAAEAAAAAAAAABXRva2VuAAAAAAAAEwAAAAEAAAAL",
@@ -214,6 +241,7 @@ export class Shelter extends contract.Client {
     steward: this.txFromJSON<string>,
     update_steward: this.txFromJSON<null>,
     bound_aid: this.txFromJSON<null>,
+    unbound_aid: this.txFromJSON<null>,
     aid_of: this.txFromJSON<contract.i128>,
     assigned_aid_of: this.txFromJSON<contract.i128>,
     available_aid_of: this.txFromJSON<contract.i128>,
