@@ -18,7 +18,7 @@ export interface AidDataKey {
 
 export interface AidValue {
   amount: contract.i128;
-  expiration: contract.i128;
+  expiration: contract.u64;
 }
 
 export type DataKey =
@@ -34,6 +34,8 @@ export const Errors = {
   3: { message: "NotEnoughAid" },
 
   4: { message: "InvalidContext" },
+
+  5: { message: "ExpiredAid" },
 };
 
 export interface Shelter {
@@ -88,7 +90,13 @@ export interface Shelter {
       recipient,
       token,
       amount,
-    }: { recipient: Buffer; token: string; amount: contract.i128 },
+      expiration,
+    }: {
+      recipient: Buffer;
+      token: string;
+      amount: contract.i128;
+      expiration: contract.u64;
+    },
     options?: {
       /**
        * The fee to pay for the transaction. Default: BASE_FEE
@@ -152,6 +160,29 @@ export interface Shelter {
       simulate?: boolean;
     }
   ) => Promise<contract.AssembledTransaction<contract.i128>>;
+
+  /**
+   * Construct and simulate a aid_expiration_of transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   */
+  aid_expiration_of: (
+    { recipient, token }: { recipient: Buffer; token: string },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    }
+  ) => Promise<contract.AssembledTransaction<contract.u64>>;
 
   /**
    * Construct and simulate a assigned_aid_of transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
@@ -223,16 +254,17 @@ export class Shelter extends contract.Client {
         "AAAAAAAAAAAAAAANX19jb25zdHJ1Y3RvcgAAAAAAAAEAAAAAAAAAB3N0ZXdhcmQAAAAAEwAAAAA=",
         "AAAAAAAAAAAAAAAHc3Rld2FyZAAAAAAAAAAAAQAAABM=",
         "AAAAAAAAAAAAAAAOdXBkYXRlX3N0ZXdhcmQAAAAAAAEAAAAAAAAAC25ld19zdGV3YXJkAAAAABMAAAAA",
-        "AAAAAAAAAAAAAAAJYm91bmRfYWlkAAAAAAAAAwAAAAAAAAAJcmVjaXBpZW50AAAAAAAD7gAAACAAAAAAAAAABXRva2VuAAAAAAAAEwAAAAAAAAAGYW1vdW50AAAAAAALAAAAAA==",
+        "AAAAAAAAAAAAAAAJYm91bmRfYWlkAAAAAAAABAAAAAAAAAAJcmVjaXBpZW50AAAAAAAD7gAAACAAAAAAAAAABXRva2VuAAAAAAAAEwAAAAAAAAAGYW1vdW50AAAAAAALAAAAAAAAAApleHBpcmF0aW9uAAAAAAAGAAAAAA==",
         "AAAAAAAAAAAAAAALdW5ib3VuZF9haWQAAAAAAgAAAAAAAAAJcmVjaXBpZW50AAAAAAAD7gAAACAAAAAAAAAABXRva2VuAAAAAAAAEwAAAAA=",
         "AAAAAAAAAAAAAAAGYWlkX29mAAAAAAACAAAAAAAAAAlyZWNpcGllbnQAAAAAAAPuAAAAIAAAAAAAAAAFdG9rZW4AAAAAAAATAAAAAQAAAAs=",
+        "AAAAAAAAAAAAAAARYWlkX2V4cGlyYXRpb25fb2YAAAAAAAACAAAAAAAAAAlyZWNpcGllbnQAAAAAAAPuAAAAIAAAAAAAAAAFdG9rZW4AAAAAAAATAAAAAQAAAAY=",
         "AAAAAAAAAAAAAAAPYXNzaWduZWRfYWlkX29mAAAAAAEAAAAAAAAABXRva2VuAAAAAAAAEwAAAAEAAAAL",
         "AAAAAAAAAAAAAAAQYXZhaWxhYmxlX2FpZF9vZgAAAAEAAAAAAAAABXRva2VuAAAAAAAAEwAAAAEAAAAL",
         "AAAAAAAAAAAAAAAMX19jaGVja19hdXRoAAAAAwAAAAAAAAARc2lnbmF0dXJlX3BheWxvYWQAAAAAAAPuAAAAIAAAAAAAAAAKc2lnbmF0dXJlcwAAAAAH0AAAAARQYXNzAAAAAAAAAA1hdXRoX2NvbnRleHRzAAAAAAAD6gAAB9AAAAAHQ29udGV4dAAAAAABAAAD6QAAA+0AAAAAAAAAAw==",
         "AAAAAQAAAAAAAAAAAAAACkFpZERhdGFLZXkAAAAAAAIAAAAAAAAACXJlY2lwaWVudAAAAAAAA+4AAAAgAAAAAAAAAAV0b2tlbgAAAAAAABM=",
-        "AAAAAQAAAAAAAAAAAAAACEFpZFZhbHVlAAAAAgAAAAAAAAAGYW1vdW50AAAAAAALAAAAAAAAAApleHBpcmF0aW9uAAAAAAAL",
+        "AAAAAQAAAAAAAAAAAAAACEFpZFZhbHVlAAAAAgAAAAAAAAAGYW1vdW50AAAAAAALAAAAAAAAAApleHBpcmF0aW9uAAAAAAAG",
         "AAAAAgAAAAAAAAAAAAAAB0RhdGFLZXkAAAAAAwAAAAEAAAAAAAAAA0FpZAAAAAABAAAH0AAAAApBaWREYXRhS2V5AAAAAAABAAAAAAAAAAtBc3NpZ25lZEFpZAAAAAABAAAAEwAAAAAAAAAAAAAAB1N0ZXdhcmQA",
-        "AAAABAAAAAAAAAAAAAAABUVycm9yAAAAAAAABAAAAAAAAAAQTm90RW5vdWdoQmFsYW5jZQAAAAEAAAAAAAAADUludmFsaWRBY3Rpb24AAAAAAAACAAAAAAAAAAxOb3RFbm91Z2hBaWQAAAADAAAAAAAAAA5JbnZhbGlkQ29udGV4dAAAAAAABA==",
+        "AAAABAAAAAAAAAAAAAAABUVycm9yAAAAAAAABQAAAAAAAAAQTm90RW5vdWdoQmFsYW5jZQAAAAEAAAAAAAAADUludmFsaWRBY3Rpb24AAAAAAAACAAAAAAAAAAxOb3RFbm91Z2hBaWQAAAADAAAAAAAAAA5JbnZhbGlkQ29udGV4dAAAAAAABAAAAAAAAAAKRXhwaXJlZEFpZAAAAAAABQ==",
       ]),
       options
     );
@@ -243,6 +275,7 @@ export class Shelter extends contract.Client {
     bound_aid: this.txFromJSON<null>,
     unbound_aid: this.txFromJSON<null>,
     aid_of: this.txFromJSON<contract.i128>,
+    aid_expiration_of: this.txFromJSON<contract.u64>,
     assigned_aid_of: this.txFromJSON<contract.i128>,
     available_aid_of: this.txFromJSON<contract.i128>,
   };
