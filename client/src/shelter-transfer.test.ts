@@ -17,10 +17,11 @@ describe("shelter indirect invocation", () => {
   const aliceKeyPair = Keypair.fromSecret(aliceSecret);
   const tokenContractId =
     "CCQK3OJ5T4A5B4SDKQWH7PQKC5HMUZHIGUWF2INTKDQB32F3YPEW7L27";
-  const shelterAddress = "CCWVMEBA44YIZPONBK7555OIPZHTS2YNODD5PMGCLIEYOT45SH26KY75";
+  const shelterAddress = "CACBLQ4KJARDID63MSVVODXYGSGP4WAXPLYOVHJ2RPNVS5FWDH2FXICS";
   const merch = "GASL6XDOK2TO6SCFTXFN2HQDAONLBID2GKX5TYBTHOWA7ZU7VRFZNHGM";
   const rpcUrl = "https://soroban-rpc.testnet.stellar.gateway.fm";
   const rpcServer = new rpc.Server(rpcUrl);
+  const mintedTokensToShelter = 1000
 
   const stewardSecret =
     "SB2SQ4BGHIHHB637KBET2Y7XG3GN5FU4DZGXSSSB5ESFAR5H3XMI5GRI";
@@ -360,4 +361,67 @@ describe("shelter indirect invocation", () => {
 
     expect(() => rpc.assembleTransaction(buildTx, simTx).build()).toThrow();
   });
+
+  test("steward withdraw from shelter sealed", async () => {
+    const bob = await _randomKeyPair();
+
+    const rawInitTx = await shelter.init({steward_key: stewardKeypair.rawPublicKey()});
+    const initBuildTx = rawInitTx.built!;
+
+    initBuildTx.sign(stewardKeypair);
+
+    const initTx = await rpcServer.sendTransaction(initBuildTx);
+    console.log("hash seal tx", initTx.hash);
+
+    const initTxResponse = await rpcServer.pollTransaction(initTx.hash);
+    expect(initTxResponse.status).toEqual("SUCCESS");
+
+    const tx = await shelter.bound_aid({
+      recipient: bob.rawPublicKey(),
+      token: tokenContractId,
+      amount: BigInt(amount),
+      expiration: BigInt(_validExpiration),
+    });
+
+    const boundBuildTx = tx.built!;
+
+    boundBuildTx.sign(stewardKeypair);
+
+    const boundTx = await rpcServer.sendTransaction(boundBuildTx);
+    console.log("hash bound tx", boundTx.hash);
+
+    const boundTxResponse = await rpcServer.pollTransaction(boundTx.hash);
+    expect(boundTxResponse.status).toEqual("SUCCESS");
+
+    
+    const rawSealTx = await shelter.seal();
+    const sealBuildTx = rawSealTx.built!;
+
+    sealBuildTx.sign(stewardKeypair);
+
+    const sealTx = await rpcServer.sendTransaction(sealBuildTx);
+    console.log("hash seal tx", sealTx.hash);
+
+    const sealTxResponse = await rpcServer.pollTransaction(sealTx.hash);
+    expect(sealTxResponse.status).toEqual("SUCCESS");
+
+    const at: any = await _sac(stewardKeypair.publicKey()).transfer({
+      from: shelterAddress,
+      to: merch,
+      amount: BigInt(mintedTokensToShelter - amount),
+    });
+    await _sign(at, { keypair: stewardKeypair });
+
+    const buildTx = at.built!;
+    const simTx: any = await rpcServer.simulateTransaction(buildTx);
+    const completeTx = rpc.assembleTransaction(buildTx, simTx).build();
+    completeTx.sign(stewardKeypair);
+
+    const sendTx = await rpcServer.sendTransaction(completeTx);
+    console.log("hash", sendTx.hash);
+
+    const txResponse = await rpcServer.pollTransaction(sendTx.hash);
+
+    expect(txResponse.status).toEqual("SUCCESS");
+  }, 5000000);
 });
