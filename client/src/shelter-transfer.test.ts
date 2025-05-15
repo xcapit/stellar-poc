@@ -17,7 +17,7 @@ describe("shelter indirect invocation", () => {
   const aliceKeyPair = Keypair.fromSecret(aliceSecret);
   const tokenContractId =
     "CCQK3OJ5T4A5B4SDKQWH7PQKC5HMUZHIGUWF2INTKDQB32F3YPEW7L27";
-  const shelterAddress = "CACBLQ4KJARDID63MSVVODXYGSGP4WAXPLYOVHJ2RPNVS5FWDH2FXICS";
+  const shelterAddress = "CDDP3LU4QANODPKOG2GL5O6YPOA3RPOTDYJRDX4K6DSOEJKIHTTMJE5W";
   const merch = "GASL6XDOK2TO6SCFTXFN2HQDAONLBID2GKX5TYBTHOWA7ZU7VRFZNHGM";
   const rpcUrl = "https://soroban-rpc.testnet.stellar.gateway.fm";
   const rpcServer = new rpc.Server(rpcUrl);
@@ -166,6 +166,8 @@ describe("shelter indirect invocation", () => {
   }, 5000000);
 
   test("transfer from shelter", async () => {
+    console.log("--- TRANSFER FROM SHELTER ---");
+
     const bob = await _randomKeyPair();
 
     const tx = await shelter.bound_aid({
@@ -180,7 +182,7 @@ describe("shelter indirect invocation", () => {
     boundBuildTx.sign(stewardKeypair);
 
     const boundTx = await rpcServer.sendTransaction(boundBuildTx);
-    console.log("hash bound tx", boundTx.hash);
+    console.log("[BOUND AID HASH]:", boundTx.hash);
 
     const boundTxResponse = await rpcServer.pollTransaction(boundTx.hash);
     expect(boundTxResponse.status).toEqual("SUCCESS");
@@ -198,7 +200,7 @@ describe("shelter indirect invocation", () => {
     completeTx.sign(bob);
 
     const sendTx = await rpcServer.sendTransaction(completeTx);
-    console.log("hash", sendTx.hash);
+    console.log("[TRANSFER HASH]:", sendTx.hash);
 
     const txResponse = await rpcServer.pollTransaction(sendTx.hash);
 
@@ -220,7 +222,6 @@ describe("shelter indirect invocation", () => {
     boundBuildTx.sign(stewardKeypair);
 
     const boundTx = await rpcServer.sendTransaction(boundBuildTx);
-    console.log("hash", boundTx.hash);
 
     const boundTxResponse = await rpcServer.pollTransaction(boundTx.hash);
     expect(boundTxResponse.status).toEqual("SUCCESS");
@@ -241,7 +242,6 @@ describe("shelter indirect invocation", () => {
     completeTx.sign(attacker);
 
     const sendTx = await rpcServer.sendTransaction(completeTx);
-    console.log("hash", sendTx.hash);
 
     const txResponse = await rpcServer.pollTransaction(sendTx.hash);
 
@@ -263,7 +263,6 @@ describe("shelter indirect invocation", () => {
     boundBuildTx.sign(stewardKeypair);
 
     const boundTx = await rpcServer.sendTransaction(boundBuildTx);
-    console.log("hash", boundTx.hash);
 
     const boundTxResponse = await rpcServer.pollTransaction(boundTx.hash);
     expect(boundTxResponse.status).toEqual("SUCCESS");
@@ -282,6 +281,8 @@ describe("shelter indirect invocation", () => {
   }, 5000000);
 
   test("transfer failed after unbound aid", async () => {
+    console.log("--- TRANSFER FAILED AFTER UNBOUND AID ---");
+
     const bob = await _randomKeyPair();
 
     const boundRawTx = await shelter.bound_aid({
@@ -296,7 +297,7 @@ describe("shelter indirect invocation", () => {
     boundBuildTx.sign(stewardKeypair);
 
     const boundTx = await rpcServer.sendTransaction(boundBuildTx);
-    console.log("hash bound tx", boundTx.hash);
+    console.log("[BOUND AID HASH]:", boundTx.hash);
 
     const boundTxResponse = await rpcServer.pollTransaction(boundTx.hash);
     expect(boundTxResponse.status).toEqual("SUCCESS");
@@ -311,7 +312,7 @@ describe("shelter indirect invocation", () => {
     unboundBuildTx.sign(stewardKeypair);
 
     const unboundTx = await rpcServer.sendTransaction(unboundBuildTx);
-    console.log("hash unbound tx", unboundTx.hash);
+    console.log("[UNBOUND AID HASH]:", unboundTx.hash);
 
     const unboundTxResponse = await rpcServer.pollTransaction(unboundTx.hash);
     expect(unboundTxResponse.status).toEqual("SUCCESS");
@@ -329,7 +330,7 @@ describe("shelter indirect invocation", () => {
     expect(() => rpc.assembleTransaction(buildTx, simTx).build()).toThrow();
   }, 5000000);
 
-  test("transfer failed, expiration aid", async () => {
+  test("transfer failed, expirated aid", async () => {
     const bob = await _randomKeyPair();
 
     const tx = await shelter.bound_aid({
@@ -344,7 +345,6 @@ describe("shelter indirect invocation", () => {
     boundBuildTx.sign(stewardKeypair);
 
     const boundTx = await rpcServer.sendTransaction(boundBuildTx);
-    console.log("hash", boundTx.hash);
 
     const boundTxResponse = await rpcServer.pollTransaction(boundTx.hash);
     expect(boundTxResponse.status).toEqual("SUCCESS");
@@ -360,21 +360,23 @@ describe("shelter indirect invocation", () => {
     const simTx: any = await rpcServer.simulateTransaction(buildTx);
 
     expect(() => rpc.assembleTransaction(buildTx, simTx).build()).toThrow();
-  });
+  }, 5000000);
 
   test("steward withdraw from shelter sealed", async () => {
+    console.log("--- STEWARD WITHDRAW FROM SHELTER SEALED ---");
+
     const bob = await _randomKeyPair();
 
-    const rawInitTx = await shelter.init({steward_key: stewardKeypair.rawPublicKey()});
-    const initBuildTx = rawInitTx.built!;
+    const rawUpdateReleaseKeyTx = await shelter.update_release_key({steward_key: stewardKeypair.rawPublicKey()});
+    const updateReleaseKeyBuildTx = rawUpdateReleaseKeyTx.built!;
 
-    initBuildTx.sign(stewardKeypair);
+    updateReleaseKeyBuildTx.sign(stewardKeypair);
 
-    const initTx = await rpcServer.sendTransaction(initBuildTx);
-    console.log("hash seal tx", initTx.hash);
+    const updateReleaseKeyTx = await rpcServer.sendTransaction(updateReleaseKeyBuildTx);
+    console.log("[UPDATE RELEASE KEY HASH]:", updateReleaseKeyTx.hash);
 
-    const initTxResponse = await rpcServer.pollTransaction(initTx.hash);
-    expect(initTxResponse.status).toEqual("SUCCESS");
+    const updateReleaseKeyResponse = await rpcServer.pollTransaction(updateReleaseKeyTx.hash);
+    expect(updateReleaseKeyResponse.status).toEqual("SUCCESS");
 
     const tx = await shelter.bound_aid({
       recipient: bob.rawPublicKey(),
@@ -388,19 +390,18 @@ describe("shelter indirect invocation", () => {
     boundBuildTx.sign(stewardKeypair);
 
     const boundTx = await rpcServer.sendTransaction(boundBuildTx);
-    console.log("hash bound tx", boundTx.hash);
+    console.log("[BOUND AID HASH]:", boundTx.hash);
 
     const boundTxResponse = await rpcServer.pollTransaction(boundTx.hash);
     expect(boundTxResponse.status).toEqual("SUCCESS");
 
-    
     const rawSealTx = await shelter.seal();
     const sealBuildTx = rawSealTx.built!;
 
     sealBuildTx.sign(stewardKeypair);
 
     const sealTx = await rpcServer.sendTransaction(sealBuildTx);
-    console.log("hash seal tx", sealTx.hash);
+    console.log("[SEAL HASH]:", sealTx.hash);
 
     const sealTxResponse = await rpcServer.pollTransaction(sealTx.hash);
     expect(sealTxResponse.status).toEqual("SUCCESS");
@@ -418,7 +419,7 @@ describe("shelter indirect invocation", () => {
     completeTx.sign(stewardKeypair);
 
     const sendTx = await rpcServer.sendTransaction(completeTx);
-    console.log("hash", sendTx.hash);
+    console.log("[TRANSFER HASH]:", sendTx.hash);
 
     const txResponse = await rpcServer.pollTransaction(sendTx.hash);
 

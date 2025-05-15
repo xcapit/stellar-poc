@@ -30,7 +30,7 @@ export type DataKey =
   | { tag: "Aid"; values: readonly [AidDataKey] }
   | { tag: "AssignedAid"; values: readonly [string] }
   | { tag: "Steward"; values: void }
-  | { tag: "StewardKey"; values: void }
+  | { tag: "ReleaseKey"; values: void }
   | { tag: "GateState"; values: void };
 
 export const Errors = {
@@ -51,9 +51,9 @@ export const Errors = {
 
 export interface Shelter {
   /**
-   * Construct and simulate a init transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Construct and simulate a update_release_key transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
-  init: (
+  update_release_key: (
     { steward_key }: { steward_key: Buffer },
     options?: {
       /**
@@ -205,12 +205,7 @@ export interface Shelter {
       token,
       amount,
       expiration,
-    }: {
-      recipient: Buffer;
-      token: string;
-      amount: contract.i128;
-      expiration: contract.u64;
-    },
+    }: { recipient: Buffer; token: string; amount: contract.i128; expiration: contract.u64 },
     options?: {
       /**
        * The fee to pay for the transaction. Default: BASE_FEE
@@ -344,7 +339,7 @@ export class Shelter extends contract.Client {
         "AAAAAgAAAAAAAAAAAAAABEdhdGUAAAADAAAAAAAAAAAAAAAET3BlbgAAAAAAAAAAAAAAB0d1YXJkZWQAAAAAAAAAAAAAAAAGU2VhbGVkAAA=",
         "AAAAAQAAAAAAAAAAAAAABFBhc3MAAAACAAAAAAAAAApwdWJsaWNfa2V5AAAAAAPuAAAAIAAAAAAAAAAJc2lnbmF0dXJlAAAAAAAD7gAAAEA=",
         "AAAAAAAAAAAAAAANX19jb25zdHJ1Y3RvcgAAAAAAAAEAAAAAAAAAB3N0ZXdhcmQAAAAAEwAAAAA=",
-        "AAAAAAAAAAAAAAAEaW5pdAAAAAEAAAAAAAAAC3N0ZXdhcmRfa2V5AAAAA+4AAAAgAAAAAA==",
+        "AAAAAAAAAAAAAAASdXBkYXRlX3JlbGVhc2Vfa2V5AAAAAAABAAAAAAAAAAtzdGV3YXJkX2tleQAAAAPuAAAAIAAAAAA=",
         "AAAAAAAAAAAAAAAEb3BlbgAAAAAAAAAA",
         "AAAAAAAAAAAAAAAFZ3VhcmQAAAAAAAAAAAAAAA==",
         "AAAAAAAAAAAAAAAEc2VhbAAAAAAAAAAA",
@@ -359,14 +354,14 @@ export class Shelter extends contract.Client {
         "AAAAAAAAAAAAAAAMX19jaGVja19hdXRoAAAAAwAAAAAAAAARc2lnbmF0dXJlX3BheWxvYWQAAAAAAAPuAAAAIAAAAAAAAAAKc2lnbmF0dXJlcwAAAAAH0AAAAARQYXNzAAAAAAAAAA1hdXRoX2NvbnRleHRzAAAAAAAD6gAAB9AAAAAHQ29udGV4dAAAAAABAAAD6QAAA+0AAAAAAAAAAw==",
         "AAAAAQAAAAAAAAAAAAAACkFpZERhdGFLZXkAAAAAAAIAAAAAAAAACXJlY2lwaWVudAAAAAAAA+4AAAAgAAAAAAAAAAV0b2tlbgAAAAAAABM=",
         "AAAAAQAAAAAAAAAAAAAACEFpZFZhbHVlAAAAAgAAAAAAAAAGYW1vdW50AAAAAAALAAAAAAAAAApleHBpcmF0aW9uAAAAAAAG",
-        "AAAAAgAAAAAAAAAAAAAAB0RhdGFLZXkAAAAABQAAAAEAAAAAAAAAA0FpZAAAAAABAAAH0AAAAApBaWREYXRhS2V5AAAAAAABAAAAAAAAAAtBc3NpZ25lZEFpZAAAAAABAAAAEwAAAAAAAAAAAAAAB1N0ZXdhcmQAAAAAAAAAAAAAAAAKU3Rld2FyZEtleQAAAAAAAAAAAAAAAAAJR2F0ZVN0YXRlAAAA",
+        "AAAAAgAAAAAAAAAAAAAAB0RhdGFLZXkAAAAABQAAAAEAAAAAAAAAA0FpZAAAAAABAAAH0AAAAApBaWREYXRhS2V5AAAAAAABAAAAAAAAAAtBc3NpZ25lZEFpZAAAAAABAAAAEwAAAAAAAAAAAAAAB1N0ZXdhcmQAAAAAAAAAAAAAAAAKUmVsZWFzZUtleQAAAAAAAAAAAAAAAAAJR2F0ZVN0YXRlAAAA",
         "AAAABAAAAAAAAAAAAAAABUVycm9yAAAAAAAABwAAAAAAAAAQTm90RW5vdWdoQmFsYW5jZQAAAAEAAAAAAAAADUludmFsaWRBY3Rpb24AAAAAAAACAAAAAAAAAAxOb3RFbm91Z2hBaWQAAAADAAAAAAAAAA5JbnZhbGlkQ29udGV4dAAAAAAABAAAAAAAAAAKRXhwaXJlZEFpZAAAAAAABQAAAAAAAAAOU2hlbHRlckd1YXJkZWQAAAAAAAYAAAAAAAAADVNoZWx0ZXJTZWFsZWQAAAAAAAAH",
       ]),
       options
     );
   }
   public readonly fromJSON = {
-    init: this.txFromJSON<null>,
+    update_release_key: this.txFromJSON<null>,
     open: this.txFromJSON<null>,
     guard: this.txFromJSON<null>,
     seal: this.txFromJSON<null>,
