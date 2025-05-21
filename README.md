@@ -1,8 +1,7 @@
-# Soroban Project
+# Soroban Playground
 
-This project showcases initial experiments with Soroban. As a result of them we are working on
-- [Shelter](https://github.com/xcapit/shelter)
-- Low Tech Wallet Service (coming soon)
+This project showcases our experiments with Soroban
+Here's the link to the Xcapit Smart Pay & Shelter Smart Contract (https://github.com/xcapit/shelter)
 
 ## Project Structure
 
@@ -116,7 +115,7 @@ value
 ```
 
 ### Links
-The contracts and the transactions are in stellar testnet: https://stellar.expert/explorer/testnet/account/GASL6XDOK2TO6SCFTXFN2HQDAONLBID2GKX5TYBTHOWA7ZU7VRFZNHGM
+Find the contracts and transactions in the Stellar testnet: https://stellar.expert/explorer/testnet/account/GASL6XDOK2TO6SCFTXFN2HQDAONLBID2GKX5TYBTHOWA7ZU7VRFZNHGM
 
 #### Note 
 Some extra features were added to the increment contract.
