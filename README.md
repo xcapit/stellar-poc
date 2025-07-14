@@ -2,7 +2,9 @@
 
 This project showcases initial experiments with Soroban. As a result of them we are working on
 - [Shelter](https://github.com/xcapit/shelter)
-- Low Tech Wallet Service (coming soon)
+- [Shelter Smart Contract](https://github.com/xcapit/shelter/tree/main/contracts)
+- [Shelter SDK](https://github.com/xcapit/shelter/tree/main/sdk)
+- [Low Tech Wallet SMS Service](https://github.com/xcapit/shelter/tree/main/ltw_service)
 
 ## Project Structure
 
