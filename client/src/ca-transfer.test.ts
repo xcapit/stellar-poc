@@ -3,7 +3,7 @@ import { Stellar, walletSdk } from "@stellar/typescript-wallet-sdk";
 import { SAC } from "./sac";
 import { Passkey } from "./passkey";
 
-describe.skip('XXXXXX', () => {
+describe('XXXXXX', () => {
   const amount = 1;
   const aliceSecret = 'SCG4Q5PANQOYOQELESMIYLPIERGFU4X25R7WUVC6JH43KUX5QOIWZYBQ';
   const aliceKeyPair = Keypair.fromSecret(aliceSecret);

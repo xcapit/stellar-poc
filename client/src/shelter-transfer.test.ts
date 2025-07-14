@@ -16,15 +16,15 @@ describe("shelter indirect invocation", () => {
     "SDZVEQPNLS74A5E7VDSUHV2EDUJJUBNNT46PRNGAJXM4SZCBGIYGAZEX";
   const aliceKeyPair = Keypair.fromSecret(aliceSecret);
   const tokenContractId =
-    "CCQK3OJ5T4A5B4SDKQWH7PQKC5HMUZHIGUWF2INTKDQB32F3YPEW7L27";
-  const shelterAddress = "CDDP3LU4QANODPKOG2GL5O6YPOA3RPOTDYJRDX4K6DSOEJKIHTTMJE5W";
+    "CDOE74SDU5HUEBKJJCHQJPFSU5CGARYWSHRJCEWY73APTOL2QFD5DQ56";
+  const shelterAddress = "CBJBDS4RJOTOKIGK5GX5GKSSTTZXCYB2EGZATSBH7B27HN7TDJTKPRBI";
   const merch = "GASL6XDOK2TO6SCFTXFN2HQDAONLBID2GKX5TYBTHOWA7ZU7VRFZNHGM";
   const rpcUrl = "https://soroban-rpc.testnet.stellar.gateway.fm";
   const rpcServer = new rpc.Server(rpcUrl);
   const mintedTokensToShelter = 1000
 
   const stewardSecret =
-    "SB2SQ4BGHIHHB637KBET2Y7XG3GN5FU4DZGXSSSB5ESFAR5H3XMI5GRI";
+    "SBHI4QJTEFZ64FTZ4M67TKU4C7QZTFERCSSYCCI5A4FSFR3Z4TC2DPHR";
   const stewardKeypair = Keypair.fromSecret(stewardSecret);
 
   let stellar: Stellar;
@@ -144,7 +144,7 @@ describe("shelter indirect invocation", () => {
     stellar = walletSdk.Wallet.TestNet().stellar();
   });
 
-  test.skip("transfer", async () => {
+  test("transfer", async () => {
     const at: any = await _sac("").transfer({
       from: shelterAddress,
       to: merch,
@@ -367,7 +367,7 @@ describe("shelter indirect invocation", () => {
 
     const bob = await _randomKeyPair();
 
-    const rawUpdateReleaseKeyTx = await shelter.update_release_key({steward_key: stewardKeypair.rawPublicKey()});
+    const rawUpdateReleaseKeyTx = await shelter.update_release_key({ steward_key: stewardKeypair.rawPublicKey() });
     const updateReleaseKeyBuildTx = rawUpdateReleaseKeyTx.built!;
 
     updateReleaseKeyBuildTx.sign(stewardKeypair);

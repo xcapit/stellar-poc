@@ -34,7 +34,7 @@ describe('Testing Stellar Wallet SDK', () => {
     account = stellar.account();
   });
 
-  describe.skip('Keys and Accounts', () => {
+  describe('Keys and Accounts', () => {
     test('keys', () => {
       const keypair = account.createKeypair();
 
@@ -64,7 +64,7 @@ describe('Testing Stellar Wallet SDK', () => {
       expect(keypair.publicKey()).toEqual(testPublicKey);
     });
 
-    test.skip('create account tx', async () => {
+    test('create account tx', async () => {
       const keypair = account.createKeypair();
       const anotherKeypair = account.createKeypair();
       await stellar.fundTestnetAccount(keypair.publicKey);
@@ -81,8 +81,8 @@ describe('Testing Stellar Wallet SDK', () => {
     }, 5000000);
   });
 
-  describe.skip('Assets (trustline)', () => {
-    test.skip('add an asset to the account (trustline)', async () => {
+  describe('Assets (trustline)', () => {
+    test('add an asset to the account (trustline)', async () => {
       const keypair = await _fundedKeypair();
 
       const result = await _addAnAssetTo(keypair);
@@ -90,7 +90,7 @@ describe('Testing Stellar Wallet SDK', () => {
       expect(result).toEqual(true);
     }, 5000000);
 
-    test.skip('add and remove an asset to the account (trustline)', async () => {
+    test('add and remove an asset to the account (trustline)', async () => {
       const keypair = await _fundedKeypair();
       const txBuilder = await stellar.transaction({
         sourceAddress: keypair
@@ -110,8 +110,8 @@ describe('Testing Stellar Wallet SDK', () => {
     }, 5000000);
   });
 
-  describe.skip('Accesing blockchain data', () => {
-    test.skip('transactions', async () => {
+  describe('Accesing blockchain data', () => {
+    test('transactions', async () => {
       const keypair = await _fundedKeypair();
       await _addAnAssetTo(keypair);
 
@@ -121,8 +121,8 @@ describe('Testing Stellar Wallet SDK', () => {
     }, 5000000);
   });
 
-  describe.skip('More transactions', () => {
-    test.skip('swap', async () => {
+  describe('More transactions', () => {
+    test('swap', async () => {
       const keypair = await _fundedKeypair();
       await _addAnAssetTo(keypair);
       const txBuilder = await stellar.transaction({ sourceAddress: keypair });
@@ -137,7 +137,7 @@ describe('Testing Stellar Wallet SDK', () => {
       expect(parseFloat(usdcBalance)).toBeGreaterThan(0);
     }, 5000000);
 
-    test.skip('mixing things...', async () => {
+    test('mixing things...', async () => {
       // Getting some USDC...
       const keypair = await _fundedKeypair();
       await _addAnAssetTo(keypair);
@@ -209,8 +209,8 @@ describe('Testing Stellar Wallet SDK', () => {
     }, 5000000);
   });
 
-  describe.skip('Sponsorship', () => {
-    test.skip('sponsoring a transaction', async () => {
+  describe('Sponsorship', () => {
+    test('sponsoring a transaction', async () => {
       const sponsorKeypair = await _fundedKeypair();
       const sponsoredKeypair = await _fundedKeypair();
       const txBuilder = await stellar.transaction({ sourceAddress: sponsoredKeypair });
@@ -225,7 +225,7 @@ describe('Testing Stellar Wallet SDK', () => {
       expect(result).toEqual(true);
     }, 5000000);
 
-    test.skip('sponsoring account creation', async () => {
+    test('sponsoring account creation', async () => {
       const sponsorKeypair = await _fundedKeypair();
       const sponsoredKeypair = account.createKeypair();
       const txBuilder = await stellar.transaction({ sourceAddress: sponsorKeypair });
@@ -241,7 +241,7 @@ describe('Testing Stellar Wallet SDK', () => {
     }, 5000000);
   });
 
-  describe.skip('Auth Tx and Custom Account', () => {
+  describe('Auth Tx and Custom Account', () => {
     const amount = 1;
     const aliceSecret = 'SCG4Q5PANQOYOQELESMIYLPIERGFU4X25R7WUVC6JH43KUX5QOIWZYBQ';
     const aliceKeyPair = Keypair.fromSecret(aliceSecret);
@@ -264,7 +264,7 @@ describe('Testing Stellar Wallet SDK', () => {
       expect(txArgs).toBeTruthy();
     });
 
-    test.skip('transfer tx with auth', async () => {
+    test('transfer tx with auth', async () => {
       const commonHolder = 'GAXRNW46AL4PI7Q6FABZ2OS3BKG3I7FHMBPRP7FBQHQLFX2KU2PBGGUP';
       const commonHolderSecret = 'SCJTXNP2BN67ALO73UBCLWM5MCRF4L5LHSQPYG3UNXONE4ESPUDESTCE';
       const commonHolderKeypair = Keypair.fromSecret(commonHolderSecret);
@@ -296,7 +296,7 @@ describe('Testing Stellar Wallet SDK', () => {
       expect(txResponse.status).toEqual("SUCCESS");
     });
 
-    test.skip('transfer from custom account 2', async () => {
+    test('transfer from custom account 2', async () => {
       const aliceAccount = await stellar.server.loadAccount(aliceKeyPair.publicKey());
 
       const txArgs = [
@@ -344,7 +344,7 @@ describe('Testing Stellar Wallet SDK', () => {
       expect(txResponse.status).toEqual("SUCCESS");
     });
 
-    test.skip('transfer from custom account', async () => {
+    test('transfer from custom account', async () => {
       const aliceAccount = await stellar.server.loadAccount(aliceKeyPair.publicKey());
 
       const txArgs = [
